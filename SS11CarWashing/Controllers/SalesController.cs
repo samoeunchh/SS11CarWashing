@@ -45,12 +45,14 @@ namespace SS11CarWashing.Controllers
         }
 
         // GET: Sales/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CustomerId"] = new SelectList(_context.Customer, "CustomerId", "PhoneNumber");
+            ViewData["CustomerId"] = new SelectList(_context.Customer, "CustomerId", "CustomerName");
+            ViewData["ItemTypes"] = await _context.ItemType.ToListAsync();
             return View();
         }
-
+        public async Task<JsonResult> GetItemByType(Guid Id)
+            => Json(await _context.Item.Where(x => x.ItemTypeId == Id).ToListAsync());
         // POST: Sales/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
