@@ -57,15 +57,32 @@ namespace SS11CarWashing.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SaleId,IssueDate,InvoiceNumber,CustomerId,Total,Discount,Vat,GrandTotal")] Sale sale)
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Sale sale)
         {
             if (ModelState.IsValid)
             {
                 sale.SaleId = Guid.NewGuid();
+                sale.InvoiceNumber = DateTime.Now.ToString("yyyyMMddHHmmssff");
+                if(sale.SaleDetails is not null)
+                {
+                    for(int i = 0; i < sale.SaleDetails.Count; i++)
+                    {
+                        sale.SaleDetails[i].SaleId = sale.SaleId;
+                        sale.SaleDetails[i].SaleDetailId = Guid.NewGuid();
+                        var item = sale.SaleDetails[i];
+                        //Stock reduce
+                        var product = _context.Item.Where(x => x.ItemId == item.ItemId && x.IsStock == true).FirstOrDefault();
+                        if(product is not null)
+                        {
+                            _context.Item.Attach(product);
+                            product.Qty -= item.Qty;
+                        }
+                    }
+                }
                 _context.Add(sale);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return Ok(sale.SaleId);
             }
             ViewData["CustomerId"] = new SelectList(_context.Customer, "CustomerId", "PhoneNumber", sale.CustomerId);
             return View(sale);
