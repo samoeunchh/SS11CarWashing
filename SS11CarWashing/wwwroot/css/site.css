@@ -24,3 +24,8 @@ img.itemlist{
     width:auto;
     height:100px;
 }
+@media Print {
+    .noprint {
+        display:none;
+    }
+}

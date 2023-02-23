@@ -24,7 +24,39 @@ namespace SS11CarWashing.Controllers
             var appDbContext = _context.Sale.Include(s => s.Customer);
             return View(await appDbContext.ToListAsync());
         }
-
+        public async Task<IActionResult> Print(Guid Id)
+        {
+            var saledetails =await (from sd in _context.SaleDetail
+                               join i in _context.Item
+                               on sd.ItemId equals i.ItemId
+                               where sd.SaleId.Equals(Id)
+                               select new SaleDetailDTO
+                               {
+                                   SaleDetailId=sd.SaleDetailId,
+                                   ItemName=i.ItemName,
+                                   Price=sd.Price,
+                                   Qty=sd.Qty,
+                                   Amount=sd.Amount,
+                                   SaleId=sd.SaleId
+                               }).ToListAsync();
+            var sale = await (from s in _context.Sale
+                        join c in _context.Customer
+                        on s.CustomerId equals c.CustomerId
+                        where s.SaleId.Equals(Id)
+                        select new SaleDTO
+                        {
+                            SaleId=s.SaleId,
+                            CustomerName=c.CustomerName,
+                            Total=s.Total,
+                            GrandTotal=s.GrandTotal,
+                            Discount=s.Discount,
+                            InvoiceNumber=s.InvoiceNumber,
+                            IssueDate=s.IssueDate,
+                            Vat=s.Vat,
+                            SaleDetails=saledetails
+                        }).FirstOrDefaultAsync();
+            return View(sale);
+        }
         // GET: Sales/Details/5
         public async Task<IActionResult> Details(Guid? id)
         {

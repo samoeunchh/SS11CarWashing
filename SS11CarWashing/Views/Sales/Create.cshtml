@@ -103,8 +103,8 @@
                    method:"POST",
                    data:sale,
                    dataType:"json",
-                   success:function(response){
-                       console.log(response);
+                   success: function (response) {
+                       window.location.href = "/Sales/Print/?Id=" + response;
                    },error:function(error){
                        console.log(error);
                    }
